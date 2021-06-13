@@ -8,9 +8,9 @@ sql = db.cursor()
 
 sql.execute('''
     CREATE TABLE IF NOT EXISTS users (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    chat_id STRING NOT NULL,
-    token STRING NOT NULL
+	ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    CHAT_ID STRING NOT NULL,
+    TOKEN STRING NOT NULL
 	)''')
 
 db.commit()

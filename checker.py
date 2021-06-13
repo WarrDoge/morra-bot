@@ -43,12 +43,12 @@ def checks():
     db = sqlite3.connect('apps.db')
     sql = db.cursor()
     
-    sql.execute('SELECT app FROM master')
+    sql.execute('SELECT APP_NAME FROM master')
     names_list = sql.fetchall()
 
     apps_list = list()
     for app_name in names_list:
-       sql.execute('SELECT app_name, app_link, status FROM {0}'.format(app_name))
+       sql.execute('SELECT APP_NAME, APP_LINK, STATUS FROM {0}'.format(app_name))
        app_info = sql.fetchall()
        apps_list.append(app_info)
        
@@ -62,17 +62,18 @@ def checks():
             
     if len(ban_list) != 0:
         for app_name in ban_list:
-            sql.execute('SELECT chat_id, status FROM {0}'.format(app_name))
+            sql.execute('SELECT CHAT_ID, STATUS FROM {0}'.format(app_name))
             user_info = sql.fetchall()
-            sql.execute('SELECT app_link, status FROM {0}'.format(app_name))
+            sql.execute('SELECT APP_LINK, STATUS FROM {0}'.format(app_name))
             app_link = sql.fetchall()
+            sql.execute('UPDATE {0} SET STATUS = {1} WHERE ID = 1'.format(app_name, 'ban')
             ban_notifier(app_name, app_link, user_info)
         
     if len(approve_list) != 0:
         for app_name in ban_list:
-            sql.execute('SELECT chat_id, status FROM {0}'.format(app_name))
+            sql.execute('SELECT CHAT_ID, STATUS FROM {0}'.format(app_name))
             user_info = sql.fetchall()
-            sql.execute('SELECT app_link, status FROM {0}'.format(app_name))
+            sql.execute('SELECT APP_LINK, STATUS FROM {0}'.format(app_name))
             app_link = sql.fetchall()            
             approve_notifier(app_name, app_link, user_info)
     

@@ -8,8 +8,8 @@ sql = db.cursor()
 
 sql.execute('''
     CREATE TABLE IF NOT EXISTS master (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    app STRING NOT NULL
+	ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    APP_NAME STRING NOT NULL
 	)''')
 
 db.commit()
