@@ -1,4 +1,5 @@
-import schedule, sqlite3, requests
+import schedule, requests
+from sql import *
 
 #---------------------
 # Check Response (ban)
@@ -40,9 +41,6 @@ def approve_notifier(app_name: str, app_link: str, chat_id_list: list):
 # Check all apps
 #---------------
 def checks():
-    db = sqlite3.connect('apps.db')
-    sql = db.cursor()
-    
     sql.execute('SELECT APP_NAME FROM master')
     names_list = sql.fetchall()
 
@@ -66,7 +64,7 @@ def checks():
             user_info = sql.fetchall()
             sql.execute('SELECT APP_LINK, STATUS FROM {0}'.format(app_name))
             app_link = sql.fetchall()
-            sql.execute('UPDATE {0} SET STATUS = {1} WHERE ID = 1'.format(app_name, 'ban')
+            sql.execute('UPDATE {0} SET STATUS = {1} WHERE ID = 1'.format(app_name, 'ban'))
             ban_notifier(app_name, app_link, user_info)
         
     if len(approve_list) != 0:
@@ -74,10 +72,9 @@ def checks():
             sql.execute('SELECT CHAT_ID, STATUS FROM {0}'.format(app_name))
             user_info = sql.fetchall()
             sql.execute('SELECT APP_LINK, STATUS FROM {0}'.format(app_name))
-            app_link = sql.fetchall()            
+            app_link = sql.fetchall()
+            sql.execute('UPDATE {0} SET STATUS = {1} WHERE ID = 1'.format(app_name, 'active'))  
             approve_notifier(app_name, app_link, user_info)
-    
-    db.close()
     
     ban_list.clear()
     approve_list.clear()
