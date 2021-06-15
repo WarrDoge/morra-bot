@@ -2,7 +2,7 @@ import schedule, requests
 from sql import *
 
 #---------------------
-# Check Response (ban)
+# Check response (ban)
 #---------------------
 ban_list = list()
 def check_ban(app_name: str, app_link: str):
@@ -11,7 +11,7 @@ def check_ban(app_name: str, app_link: str):
         ban_list.append(app_name)
 
 #-------------------------
-# Check Response (approve)
+# Check response (approve)
 #-------------------------
 approve_list = list()
 def check_approve(app_name: str, app_link: str):
@@ -41,8 +41,9 @@ def approve_notifier(app_name: str, app_link: str, chat_id_list: list):
 # Check all apps
 #---------------
 def checks():
-    sql.execute('SELECT APP_NAME FROM master')
-    names_list = sql.fetchall()
+    # TODO: fix function to work with new sql db
+    sql.execute('SELECT APP_NAME, APP_LINK, STATUS FROM master')
+    app_list = sql.fetchall()
 
     apps_list = list()
     for app_name in names_list:
@@ -65,6 +66,7 @@ def checks():
             sql.execute('SELECT APP_LINK, STATUS FROM {0}'.format(app_name))
             app_link = sql.fetchall()
             sql.execute('UPDATE {0} SET STATUS = {1} WHERE ID = 1'.format(app_name, 'ban'))
+            db.commit()
             ban_notifier(app_name, app_link, user_info)
         
     if len(approve_list) != 0:
@@ -74,6 +76,7 @@ def checks():
             sql.execute('SELECT APP_LINK, STATUS FROM {0}'.format(app_name))
             app_link = sql.fetchall()
             sql.execute('UPDATE {0} SET STATUS = {1} WHERE ID = 1'.format(app_name, 'active'))  
+            db.commit()
             approve_notifier(app_name, app_link, user_info)
     
     ban_list.clear()
