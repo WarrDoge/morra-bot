@@ -1,15 +1,6 @@
 import schedule, requests
 from sql import *
 
-#---------------------
-# Check response (ban)
-#---------------------
-ban_list = list()
-def check_ban(app_name: str, app_link: str):
-    response = requests.get(app_link)
-    if response == 404:
-        ban_list.append(app_name)
-
 #-------------------------
 # Check response (approve)
 #-------------------------
@@ -41,43 +32,52 @@ def approve_notifier(app_name: str, app_link: str, chat_id_list: list):
 # Check all apps
 #---------------
 def checks():
-    # TODO: fix function to work with new sql db
     sql.execute('SELECT APP_NAME, APP_LINK, STATUS FROM master')
     app_list = sql.fetchall()
-
-    apps_list = list()
-    for app_name in names_list:
-       sql.execute('SELECT APP_NAME, APP_LINK, STATUS FROM {0}'.format(app_name))
-       app_info = sql.fetchall()
-       apps_list.append(app_info)
+    app_list = list(sum(app_list, ()))
        
-    for app in apps_list:
-        if 'active' in str(app[2]):
-            check_ban(app[0], app[1])
-        elif 'approving'in str(app[2]):
-            check_approve(app[0], app[1])
+    i = 0  
+    ban_list = list()
+    approve_list = list()
+    while i < len(app_list):
+        if str(app_list[i]) == 'active':
+            response = requests.get(app_list[i-1])
+            if response == 404:
+                buffer = list()
+                buffer.append(app_list[i-2])
+                buffer.append(app_list[i-1])
+                ban_list.append(buffer)
+            
+        elif str(app_list[i]) == 'approving':
+            response = requests.get(app_list[i-1])
+            if response == 200:
+                buffer = list()
+                buffer.append(app_list[i-2])
+                buffer.append(app_list[i-1])
+                approve_list.append(buffer)
+            
         else:
-            print('Skipping banned app: {0}...'.format(app))
+            print('Skipping banned app...')    
+            
+        i += 1
             
     if len(ban_list) != 0:
-        for app_name in ban_list:
-            sql.execute('SELECT CHAT_ID, STATUS FROM {0}'.format(app_name))
+        for app in ban_list:
+            sql.execute('SELECT CHAT_ID, STATUS FROM {0}'.format(app[0]))
             user_info = sql.fetchall()
-            sql.execute('SELECT APP_LINK, STATUS FROM {0}'.format(app_name))
-            app_link = sql.fetchall()
-            sql.execute('UPDATE {0} SET STATUS = {1} WHERE ID = 1'.format(app_name, 'ban'))
+            user_info = list(sum(user_info, ()))
+            sql.execute('UPDATE master SET STATUS = {0} WHERE APP_NAME = {1}'.format('ban', app[0]))
             db.commit()
-            ban_notifier(app_name, app_link, user_info)
+            ban_notifier(app[0], app[1], user_info)
         
     if len(approve_list) != 0:
-        for app_name in ban_list:
-            sql.execute('SELECT CHAT_ID, STATUS FROM {0}'.format(app_name))
+        for app in approve_list:
+            sql.execute('SELECT CHAT_ID, STATUS FROM {0}'.format(app[0]))
             user_info = sql.fetchall()
-            sql.execute('SELECT APP_LINK, STATUS FROM {0}'.format(app_name))
-            app_link = sql.fetchall()
-            sql.execute('UPDATE {0} SET STATUS = {1} WHERE ID = 1'.format(app_name, 'active'))  
+            user_info = list(sum(user_info, ()))
+            sql.execute('UPDATE master SET STATUS = {0} WHERE APP_NAME = {1}'.format('ban', app[0]))
             db.commit()
-            approve_notifier(app_name, app_link, user_info)
+            approve_notifier(app[0], app[1], user_info)
     
     ban_list.clear()
     approve_list.clear()
