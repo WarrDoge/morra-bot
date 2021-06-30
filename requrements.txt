@@ -1,0 +1,4 @@
+python3
+pip3
+
+pip install pyTelegramBotAPI schedule
